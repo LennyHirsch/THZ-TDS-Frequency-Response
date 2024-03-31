@@ -48,7 +48,7 @@ def E(n_thz, omega, z):
 
 #N_THZ CALCULATION
 power = lambda x: 1346*(x**-2.373) + 3.34
-parsons = pd.read_csv('C:/Users/2090496H/OneDrive - University of Glasgow/Documents/Python/THz-TDS-Frequency-Response/Parsons.csv')
+parsons = pd.read_csv('C:/Users/Lenny/Documents/Python/Tomasino_THz/Parsons.csv')
 
 # INITIALISE ARRAYS AND CONSTANTS
 Freq_response_delta = []
@@ -141,7 +141,7 @@ plt.subplot(1,3,3)
 plt.plot(xt, np.real(td_delta))
 plt.plot(xt, np.real(td_long))
 plt.plot(xt, np.real(td_short))
-plt.legend(['Delta','Long','Short'])
+plt.legend(['Long','Short'])
 plt.xlim([0,xlim])
 plt.title("THz pulse (time domain)")
 plt.xlabel("Time")
