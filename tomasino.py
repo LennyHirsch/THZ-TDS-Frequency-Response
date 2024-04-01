@@ -47,7 +47,7 @@ def E(n_thz, omega, z):
     return( E1(n_thz, omega)*(E2(n_thz, omega, z) + E3(n_thz, omega, z) - E4(omega, z)) )
 
 #N_THZ CALCULATION
-power = lambda x: 1346*(x**-2.373) + 3.34
+power = lambda x: 1346*(x**-2.373) + 3.34 # coefficients from Matlab power fit of experimental data (Parsons)
 parsons = pd.read_csv('C:/Users/Lenny/Documents/Python/Tomasino_THz/Parsons.csv')
 
 # INITIALISE ARRAYS AND CONSTANTS
@@ -60,10 +60,10 @@ E_det_long = []
 E_det_short = []
 
 res = int(1e4)
-z = np.linspace(0,100e-9,res) # NOTE: This variable is a bit of a mystery...
+z = np.linspace(0,100e-9,res) # NOTE: This variable is a bit of a mystery... Not entirely sure why this range works.
 freq = np.linspace(0.1e12,1e13,res)
 
-t_pump = 245e-15
+t_pump = 150e-15
 t_probe_delta = 1e-21
 t_probe_short = 55e-15
 t_probe_long = 245e-15
