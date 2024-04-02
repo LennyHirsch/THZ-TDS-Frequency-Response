@@ -91,6 +91,44 @@ def r_foc(freq):
 def T_foc(freq):
     return r_foc(freq)/r_in(freq)
 
+# OVERLAP TRANSFER FUNCTION
+def T_overlap(freq, probe_waist):
+    top = np.pi * probe_waist**2 * r_foc(freq)**2
+    bottom = probe_waist**2 + 2*r_foc(freq)**2
+    return np.sqrt( top/bottom )
+
+# FUNCTION TO CHECK COHERENCE LENGTH
+def L_coh(freq, n_thz):
+    return wvl(freq) / 2*np.abs(n_g - n_thz)
+
+# NORMALISATION
+def normalise(array):
+    max_val = max(array)
+    return (array / max_val)
+
+# DO EVERYTHING
+def transfer_function(freq, wvl_probe, t_probe, t_pump, n_thz, z, probe_waist):
+    E_field = []
+    freq_resp = []
+    trans_fp = []
+    trans_foc = []
+    trans_overlap = []
+    E_det = []
+
+    for i, f in enumerate(freq):
+        delta_k = k(wvl_probe) + k(wvl(f)) - k(wvl_probe - wvl(f))
+        
+        freq_resp.append( freq_response(Aopt(omega(f), t_probe), X2, deltaPhi(L_det, delta_k)) )
+        trans_fp.append(T_fp(omega(f), n_thz[i]))
+        trans_foc.append(T_foc(f))
+        trans_overlap.append(T_overlap(f, probe_waist))
+
+        E_field.append(E(n_thz[i], omega(f), z[i], t_pump)**2)
+
+    E_det = [f*fp*foc*ovr*E for f, fp, foc, ovr, E in zip(freq_resp, trans_fp, trans_foc, trans_overlap, E_field)]
+
+    return (E_field, freq_resp, trans_fp, trans_foc, trans_overlap, E_det)
+
 #N_THZ CALCULATION
 power = lambda x: 1346*(x**-2.373) + 3.34 # coefficients from Matlab power fit of experimental data (Parsons)
 parsons = pd.read_csv('C:/Users/Lenny/Documents/Python/Tomasino_THz/Parsons.csv')
