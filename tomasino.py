@@ -12,7 +12,7 @@ freq_thz = 3e12 # THz frequency: 3 THz
 
 # SETTING SIMULATION PARAMETERS
 res = int(1e4)
-z = np.linspace(0,10e-9,res) # NOTE: This variable is a bit of a mystery... Not entirely sure why this range works.
+z = np.linspace(0,100e-9,res) # NOTE: This variable is a bit of a mystery... Not entirely sure why this range works.
 freq = np.linspace(0.01e12,1e13,res)
 
 t_pump = 160e-15
@@ -33,7 +33,7 @@ n_thz = power(x) # this gives us values of n_thz for all points simulated. R-squ
 (Ef_long, f_long, fp_long, foc_long, ovr_long, E_long) = transfer_function(freq, wvl_probe, t_probe_long, t_pump, n_thz, z, 3.5e-3)
 
 # CALCULATE TIME DOMAIN
-nfft = 6 # smooths out FFT
+nfft = 8 # smooths out FFT
 sampleSpacing = freq[2] - freq[1]
 
 td_delta = fft.fft(np.real(E_delta), res*nfft)
@@ -56,6 +56,7 @@ plt.plot(freq, np.real(Ef_delta))
 plt.title("E-field (Frequency domain)")
 plt.xlabel("Freq")
 plt.ylabel("E field ^2")
+plt.grid()
 
 # PLOTTING DETECTED E-FIELD
 plt.subplot(1,3,2)
@@ -67,6 +68,7 @@ plt.legend(["Delta", "Short", "Long"])
 plt.title("Detected E-field (Frequency domain)")
 plt.xlabel("Freq")
 plt.ylabel("E field ^2")
+plt.grid()
 
 # PLOTTING TIME-DOMAIN
 plt.subplot(1,3,3)
@@ -77,8 +79,9 @@ plt.legend(["Delta", "Short", "Long"])
 plt.title("THz pulse (time domain)")
 plt.xlabel("Time")
 plt.ylabel("Amplitude")
-start = 0.9e-11
+start = 0.2e-11
 end = 1.7e-11
 plt.xlim([start,end])
+plt.grid()
 
 plt.show()

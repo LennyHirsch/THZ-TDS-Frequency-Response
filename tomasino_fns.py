@@ -5,8 +5,9 @@ import scipy.fft as fft
 import pandas as pd
 
 c = 299792458 # speed of light in vacuum: m/s
-L_gen = 1e-3 # generation crystal thickness: 1mm
+L_gen = 0.5e-3 # generation crystal thickness: 1mm
 L_det = 300e-6 # detection crystal thickness: 300 um
+thz_waist = 3.5e-3
 X2 = 200e-12
 # X2 = 0.97e-12 # chi(2) coefficient: pm/V. NOTE: This should be the electro-optic coefficient (I think?)
 # In Tomasino et al. they say X2 is the second-order susceptibility for the DFG case (the same as the OR case). Is this the r_41? Or d_41? I... don't know.
@@ -16,9 +17,10 @@ E0 = 1e3 # normalise electric field for now
 n_g = 3.4216 # NOTE: from refractiveindex.info (Parsons and Coleman)
 
 # NOTE: these probably need fixing/changing frequently for accurate usage
-eps_inf = 5
+eps_0 = 11.1
+eps_inf = 9.11
 phonon_res = 11e12
-phonon_mode = 1e12
+phonon_mode = 2e12
 
 # HELPER FUNCTIONS
 k = lambda wvl: 2*np.pi / wvl
@@ -53,7 +55,7 @@ def E(n_thz, omega, z, t_pump):
 
 # FABRY-PEROT TRANSFER FUNCTIONS
 def eps_thz(omega):
-    return( eps_inf + ((11.1 - eps_inf) * phonon_res**2)/(phonon_res**2 - omega**2 + 1j*phonon_mode*omega) )
+    return(eps_inf + ( ((eps_0 - eps_inf) * phonon_res**2)/(phonon_res**2 - omega**2 + 1j*phonon_mode*omega) ))
 
 def T12(omega):
     return( (2*np.sqrt(eps_thz(omega)))/(np.sqrt(eps_thz(omega)) + 1) )
@@ -68,17 +70,17 @@ def T_fp(omega, n_thz):
 
 # FOCUSING TRANSFER FUNCTIONS
 def z_B(omega):
-    return( (omega**2 * ( 3.5e-3 )**3) / (4 * np.sqrt(2) * c**2) )
+    return( (omega**2 * ( thz_waist )**3) / (4 * np.sqrt(2) * c**2) )
 
 def z_diff(freq):
-    if k(wvl(freq))*3.5e-3 <= 1:
+    if k(wvl(freq))*thz_waist <= 1:
         return z_B(omega(freq))
     else:
-        return k(wvl(freq)) * (3.5e-3)**2 / 2
+        return ( k(wvl(freq)) * thz_waist**2 / 2 )
 
 def r_in(freq):
     term1 = 50.4e-3 / 2*np.sqrt(2)
-    term2 = 3.5e-3 * np.sqrt(1 + freq/z_diff(omega(freq))**2)
+    term2 = thz_waist * np.sqrt(1 + ( freq**2 )/( z_diff(omega(freq))**2 ))
 
     if term1 < term2:
         return term1
