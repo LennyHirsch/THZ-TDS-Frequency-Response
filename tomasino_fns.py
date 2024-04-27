@@ -5,11 +5,11 @@ import scipy.fft as fft
 import pandas as pd
 
 c = 299792458 # speed of light in vacuum: m/s
-L_gen = 0.5e-3 # generation crystal thickness: 1mm
+L_gen = 1e-3 # generation crystal thickness: 1mm
 L_det = 300e-6 # detection crystal thickness: 300 um
 thz_waist = 3.5e-3
-X2 = 200e-12
-# X2 = 0.97e-12 # chi(2) coefficient: pm/V. NOTE: This should be the electro-optic coefficient (I think?)
+# X2 = 200e-12
+X2 = 0.97e-12 # chi(2) coefficient: pm/V. NOTE: This should be the electro-optic coefficient (I think?)
 # In Tomasino et al. they say X2 is the second-order susceptibility for the DFG case (the same as the OR case). Is this the r_41? Or d_41? I... don't know.
 
 # E-field constants
@@ -27,19 +27,9 @@ k = lambda wvl: 2*np.pi / wvl
 omega = lambda freq: 2*np.pi*freq
 wvl = lambda freq: c / freq
 
-# FREQUENCY RESPONSE FUNCTIONS
-def Aopt(omega, pulseDuration):
-    return((np.sqrt(np.pi)/pulseDuration)*np.exp(-(omega**2 * pulseDuration**2)/4))
-
-def deltaPhi(Ldet, delta_k):
-    return((np.exp(-1j * delta_k * Ldet) - 1)/(1j * delta_k))
-
-def freq_response(Aopt, X2, deltaPhi):
-    return(Aopt*X2*deltaPhi)
-
 # E-FIELD FUNCTIONS
 def E1(n_thz, omega, t_pump):
-    return( (E0**2 * X2 * t_pump * np.sqrt(np.pi))/(2*(n_thz**2 - n_g**2)) * np.exp(- (t_pump**2 * omega**2) / 4) )
+    return( ( (E0**2 * X2 * t_pump * np.sqrt(np.pi)) * np.exp(- (t_pump**2 * omega**2) / 4) ) / (2*(n_thz**2 - n_g**2)))
 
 def E2(n_thz, omega, z):
     return( 0.5*(1 - n_g/n_thz)*np.exp(1j * n_thz * omega * z / c) )
@@ -52,6 +42,16 @@ def E4(omega, z):
 
 def E(n_thz, omega, z, t_pump):
     return( E1(n_thz, omega, t_pump)*(E2(n_thz, omega, z) + E3(n_thz, omega, z) - E4(omega, z)) )
+
+# FREQUENCY RESPONSE FUNCTIONS
+def Aopt(omega, pulseDuration):
+    return((np.sqrt(np.pi)/pulseDuration)*np.exp(-(omega**2 * pulseDuration**2)/4))
+
+def deltaPhi(Ldet, delta_k):
+    return((np.exp(-1j * delta_k * Ldet) - 1)/(1j * delta_k))
+
+def freq_response(Aopt, X2, deltaPhi):
+    return(Aopt*X2*deltaPhi)
 
 # FABRY-PEROT TRANSFER FUNCTIONS
 def eps_thz(omega):
@@ -128,9 +128,11 @@ def transfer_function(freq, wvl_probe, t_probe, t_pump, n_thz, z, probe_waist):
         E_field.append(E(n_thz[i], omega(f), z[i], t_pump)**2)
 
     E_det = [f*fp*foc*ovr*E for f, fp, foc, ovr, E in zip(freq_resp, trans_fp, trans_foc, trans_overlap, E_field)]
+    # E_det = [f*e for f, e in zip(freq_resp, E_field)]
 
     return (E_field, freq_resp, trans_fp, trans_foc, trans_overlap, E_det)
 
 #N_THZ CALCULATION
-power = lambda x: 1346*(x**-2.373) + 3.34 # coefficients from Matlab power fit of experimental data (Parsons)
-parsons = pd.read_csv('C:/Users/Lenny/Documents/Python/Tomasino_THz/Parsons.csv')
+# power = lambda x: 1346*(x**-2.373) + 3.34 # coefficients from Matlab power fit of experimental data (Parsons)
+power = lambda x: (7.732e-12)*(x**-2.373) + 3.34 # coefficients from Matlab power fit of experimental data (Parsons) EDIT: corrected version; previous was using um, this is using m as wavelength unit
+parsons = pd.read_csv('C:/Users/2090496H/OneDrive - University of Glasgow/Documents/Python/THz-TDS-Frequency-Response/Parsons.csv')
