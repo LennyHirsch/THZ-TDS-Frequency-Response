@@ -69,32 +69,32 @@ E_long_pow = normalise(E_long_pow)
 E_test_pow = normalise(E_test_pow)
 
 # PLOTTING E-FIELD
-# plt.subplot(1,3,1)
-# plt.plot(freq, np.real(Ef_delta))
-# plt.title("E-field (Frequency domain)")
-# # plt.yscale('log')
-# plt.xlabel("Freq")
-# plt.ylabel("E field ^2")
-# plt.grid()
-#
-# # PLOTTING DETECTED E-FIELD
-# plt.subplot(1,3,2)
-# plt.plot(freq, E_delta_pow)
-# plt.plot(freq, E_short_pow)
-# plt.plot(freq, E_long_pow)
-# # plt.plot(freq, E_test_pow)
-# plt.legend(["Delta", "Short", "Long", "Test"])
+plt.subplot(1,3,1)
+plt.plot(freq, np.real(Ef_delta))
+plt.title("E-field (Frequency domain)")
 # plt.yscale('log')
-# plt.title("Detected E-field (Frequency domain)")
-# plt.xlabel("Freq")
-# plt.ylabel("E field ^2")
-# start = 3e-4
-# end = 1.4
+plt.xlabel("Freq")
+plt.ylabel("E field ^2")
+plt.grid()
+
+# PLOTTING DETECTED E-FIELD
+plt.subplot(1,3,2)
+plt.plot(freq, E_delta_pow)
+plt.plot(freq, E_short_pow)
+plt.plot(freq, E_long_pow)
+# plt.plot(freq, E_test_pow)
+plt.legend(["Delta", "Short", "Long", "Test"])
+plt.yscale('log')
+plt.title("Detected E-field (Frequency domain)")
+plt.xlabel("Freq")
+plt.ylabel("E field ^2")
+start = 3e-4
+end = 1.4
 # plt.ylim([start,end])
-# plt.grid()
-#
-# # PLOTTING TIME-DOMAIN
-# plt.subplot(1,3,3)
+plt.grid()
+
+# PLOTTING TIME-DOMAIN
+plt.subplot(1,3,3)
 # plt.plot(xt, np.real(td_delta))
 plt.plot(xt, np.real(td_short))
 # plt.plot(xt, np.real(td_long))

@@ -135,4 +135,4 @@ def transfer_function(freq, wvl_probe, t_probe, t_pump, n_thz, z, probe_waist):
 #N_THZ CALCULATION
 # power = lambda x: 1346*(x**-2.373) + 3.34 # coefficients from Matlab power fit of experimental data (Parsons)
 power = lambda x: (7.732e-12)*(x**-2.373) + 3.34 # coefficients from Matlab power fit of experimental data (Parsons) EDIT: corrected version; previous was using um, this is using m as wavelength unit
-parsons = pd.read_csv('~/Documents/PhD/THz-TDS-Frequency-Response/Parsons.csv')
+# parsons = pd.read_csv('~/Documents/PhD/THz-TDS-Frequency-Response/Parsons.csv')
