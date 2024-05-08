@@ -13,9 +13,10 @@ freq_thz = 3e12 # THz frequency: 3 THz
 # SETTING SIMULATION PARAMETERS
 res = int(1e4)
 z = np.linspace(0,100e-9,res) # NOTE: This variable is a bit of a mystery... Not entirely sure why this range works.
+# z = np.linspace(0,100e-9,res) # NOTE: This variable is a bit of a mystery... Not entirely sure why this range works.
 freq = np.linspace(0.01e11,1e13,res)
 
-t_pump = 150e-15
+t_pump = 160e-15
 t_probe_delta = 1e-21
 t_probe_short = 55e-15
 t_probe_long = 245e-15
@@ -39,6 +40,17 @@ n_thz = power(x) # this gives us values of n_thz for all points simulated. R-squ
 nfft = 8 # smooths out FFT
 sampleSpacing = freq[2] - freq[1]
 
+# CALCULATE POWER SPECTRUM
+E_delta_pow = [e**2 for e in np.abs(np.real(E_delta))]
+E_short_pow = [e**2 for e in np.abs(np.real(E_short))]
+E_long_pow = [e**2 for e in np.abs(np.real(E_long))]
+E_test_pow = [e**2 for e in np.abs(np.real(E_test))]
+
+# E_delta_pow = [e**2 for e in np.real(np.abs(E_delta))]
+# E_short_pow = [e**2 for e in np.real(np.abs(E_short))]
+# E_long_pow = [e**2 for e in np.real(np.abs(E_long))]
+# E_test_pow = [e**2 for e in np.real(np.abs(E_test))]
+
 td_delta = fft.fft(np.real(E_delta), res*nfft)
 td_short = fft.fft(np.real(E_short), res*nfft)
 td_long = fft.fft(np.real(E_long), res*nfft)
@@ -51,49 +63,49 @@ td_short = normalise(td_short)
 td_long = normalise(td_long)
 td_test = normalise(td_test)
 
-E_delta = normalise(E_delta)
-E_short = normalise(E_short)
-E_long = normalise(E_long)
-E_test = normalise(E_test)
+E_delta_pow = normalise(E_delta_pow)
+E_short_pow = normalise(E_short_pow)
+E_long_pow = normalise(E_long_pow)
+E_test_pow = normalise(E_test_pow)
 
 # PLOTTING E-FIELD
-plt.subplot(1,3,1)
-plt.plot(freq, np.real(Ef_delta))
-plt.title("E-field (Frequency domain)")
+# plt.subplot(1,3,1)
+# plt.plot(freq, np.real(Ef_delta))
+# plt.title("E-field (Frequency domain)")
+# # plt.yscale('log')
+# plt.xlabel("Freq")
+# plt.ylabel("E field ^2")
+# plt.grid()
+#
+# # PLOTTING DETECTED E-FIELD
+# plt.subplot(1,3,2)
+# plt.plot(freq, E_delta_pow)
+# plt.plot(freq, E_short_pow)
+# plt.plot(freq, E_long_pow)
+# # plt.plot(freq, E_test_pow)
+# plt.legend(["Delta", "Short", "Long", "Test"])
 # plt.yscale('log')
-plt.xlabel("Freq")
-plt.ylabel("E field ^2")
-plt.grid()
-
-# PLOTTING DETECTED E-FIELD
-plt.subplot(1,3,2)
-plt.plot(freq, np.abs(np.real(E_delta)))
-plt.plot(freq, np.abs(np.real(E_short)))
-plt.plot(freq, np.abs(np.real(E_long)))
-plt.plot(freq, np.abs(np.real(E_test)))
-plt.legend(["Delta", "Short", "Long", "Test"])
-# plt.yscale('log')
-plt.title("Detected E-field (Frequency domain)")
-plt.xlabel("Freq")
-plt.ylabel("E field ^2")
-start = 3e-4
-end = 1.4
-plt.ylim([start,end])
-plt.grid()
-
-# PLOTTING TIME-DOMAIN
-plt.subplot(1,3,3)
+# plt.title("Detected E-field (Frequency domain)")
+# plt.xlabel("Freq")
+# plt.ylabel("E field ^2")
+# start = 3e-4
+# end = 1.4
+# plt.ylim([start,end])
+# plt.grid()
+#
+# # PLOTTING TIME-DOMAIN
+# plt.subplot(1,3,3)
 # plt.plot(xt, np.real(td_delta))
-# plt.plot(xt, np.real(td_short))
-plt.plot(xt, np.real(td_long))
+plt.plot(xt, np.real(td_short))
+# plt.plot(xt, np.real(td_long))
 # plt.plot(xt, np.real(td_test))
 plt.legend(["Delta", "Short", "Long", "Test"])
 plt.title("THz pulse (time domain)")
 plt.xlabel("Time")
 plt.ylabel("Amplitude")
-start = 0.0e-11
-end = 0.4e-11
-# plt.xlim([start,end])
+start = 0.9e-11
+end = 1.8e-11
+plt.xlim([start,end])
 plt.grid()
 
 plt.show()
