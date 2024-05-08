@@ -5,14 +5,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fft as fft
-from intersect import intersection
 from tomasino_fns import *
 
 wvl_probe = 1030e-9 # probe wavelength: 1030 nm
 freq_thz = 3e12 # THz frequency: 3 THz
 
 # SETTING SIMULATION PARAMETERS
-res = int(1e3)
+res = int(1e4)
 z = np.linspace(0,100e-9,res) # NOTE: This variable is a bit of a mystery... Not entirely sure why this range works.
 # z = np.linspace(0,100e-9,res) # NOTE: This variable is a bit of a mystery... Not entirely sure why this range works.
 freq = np.linspace(0.01e11,1e13,res)
@@ -80,8 +79,8 @@ plt.grid()
 
 # PLOTTING DETECTED E-FIELD
 plt.subplot(1,3,2)
-# plt.plot(freq, E_delta_pow)
-# plt.plot(freq, E_short_pow)
+plt.plot(freq, E_delta_pow)
+plt.plot(freq, E_short_pow)
 plt.plot(freq, E_long_pow)
 # plt.plot(freq, E_test_pow)
 plt.legend(["Delta", "Short", "Long", "Test"])
@@ -98,7 +97,7 @@ plt.grid()
 plt.subplot(1,3,3)
 # plt.plot(xt, np.real(td_delta))
 plt.plot(xt, np.real(td_short))
-plt.plot(xt, np.real(td_long))
+# plt.plot(xt, np.real(td_long))
 # plt.plot(xt, np.real(td_test))
 plt.legend(["Delta", "Short", "Long", "Test"])
 plt.title("THz pulse (time domain)")
@@ -110,14 +109,3 @@ plt.xlim([start,end])
 plt.grid()
 
 plt.show()
-
-linex = np.linspace(1.08e-11,1.15e-11,res)
-liney = np.linspace(0,0,res)
-
-x, y = intersection(linex, liney, xt, np.real(td_long))
-plt.plot(np.linspace(0,1.8e-11,res),np.linspace(0,0,res))
-plt.plot(xt, np.real(td_long))
-plt.plot(x,y,"*k")
-print("Duration: " + str(x[2]-x[0]))
-plt.show()
-

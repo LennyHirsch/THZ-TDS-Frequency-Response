@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fft as fft
-# import pandas as pd
+import pandas as pd
 
 c = 299792458 # speed of light in vacuum: m/s
 L_gen = 1e-3 # generation crystal thickness: 1mm
