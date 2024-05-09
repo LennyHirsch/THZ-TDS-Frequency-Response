@@ -23,9 +23,11 @@ phonon_res = 11e12
 phonon_mode = 2e12
 
 # HELPER FUNCTIONS
-k = lambda wvl: 2*np.pi / wvl
+# k = lambda wvl: 2*np.pi / wvl
+k = lambda freq: 2*np.pi*freq / c
 omega = lambda freq: 2*np.pi*freq
 wvl = lambda freq: c / freq
+frq = lambda wave: c / wave
 
 # E-FIELD FUNCTIONS
 def E1(n_thz, omega, t_pump):
@@ -118,7 +120,7 @@ def transfer_function(freq, wvl_probe, t_probe, t_pump, n_thz, z, probe_waist):
     E_det = []
 
     for i, f in enumerate(freq):
-        delta_k = k(wvl_probe) + k(wvl(f)) - k(wvl_probe - wvl(f))
+        delta_k = k(frq(wvl_probe)) + k(f) - k(frq(wvl_probe) - f)
         
         freq_resp.append( freq_response(Aopt(omega(f), t_probe), X2, deltaPhi(L_det, delta_k)) )
         trans_fp.append(T_fp(omega(f), n_thz[i]))
@@ -127,8 +129,8 @@ def transfer_function(freq, wvl_probe, t_probe, t_pump, n_thz, z, probe_waist):
 
         E_field.append(E(n_thz[i], omega(f), z[i], t_pump)**2)
 
-    E_det = [f*fp*foc*ovr*E for f, fp, foc, ovr, E in zip(freq_resp, trans_fp, trans_foc, trans_overlap, E_field)]
-    # E_det = [f*e for f, e in zip(freq_resp, E_field)]
+    # E_det = [f*foc*ovr*E for f, foc, ovr, E in zip(freq_resp, trans_foc, trans_overlap, E_field)]
+    E_det = [f*e for f, e in zip(freq_resp, E_field)]
 
     return (E_field, freq_resp, trans_fp, trans_foc, trans_overlap, E_det)
 

@@ -5,7 +5,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fft as fft
-from intersect import intersection
+# from intersect import intersection
 from tomasino_fns import *
 
 wvl_probe = 1030e-9 # probe wavelength: 1030 nm
@@ -17,7 +17,8 @@ z = np.linspace(0,100e-9,res) # NOTE: This variable is a bit of a mystery... Not
 # z = np.linspace(0,100e-9,res) # NOTE: This variable is a bit of a mystery... Not entirely sure why this range works.
 freq = np.linspace(0.01e11,1e13,res)
 
-t_pump = 160e-15
+t_pump = 245e-15
+# t_pump = 160e-15
 t_probe_delta = 1e-21
 t_probe_short = 55e-15
 t_probe_long = 245e-15
@@ -42,10 +43,10 @@ nfft = 8 # smooths out FFT
 sampleSpacing = freq[2] - freq[1]
 
 # CALCULATE POWER SPECTRUM
-E_delta_pow = [e**2 for e in np.abs(np.real(E_delta))]
-E_short_pow = [e**2 for e in np.abs(np.real(E_short))]
-E_long_pow = [e**2 for e in np.abs(np.real(E_long))]
-E_test_pow = [e**2 for e in np.abs(np.real(E_test))]
+E_delta_pow = [e**2 for e in np.abs(E_delta)]
+E_short_pow = [e**2 for e in np.abs(E_short)]
+E_long_pow = [e**2 for e in np.abs(E_long)]
+E_test_pow = [e**2 for e in np.abs(E_test)]
 
 # E_delta_pow = [e**2 for e in np.real(np.abs(E_delta))]
 # E_short_pow = [e**2 for e in np.real(np.abs(E_short))]
@@ -110,18 +111,18 @@ plt.xlim([start,end])
 plt.grid()
 
 plt.show()
-
-linex = np.linspace(1.08e-11,1.15e-11,res)
-liney = np.linspace(0,0,res)
-
-xs, ys = intersection(linex, liney, xt, np.real(td_short))
-xl, yl = intersection(linex, liney, xt, np.real(td_long))
-plt.plot(np.linspace(0,1.8e-11,res),np.linspace(0,0,res))
-plt.plot(xt, np.real(td_short))
-plt.plot(xt, np.real(td_long))
-plt.plot(xs,ys,"*k")
-plt.plot(xl,yl,"xk")
-print("Duration short: " + str(xs[2]-xs[0]))
-print("Duration long: " + str(xl[2]-xl[0]))
-plt.show()
-
+#
+# linex = np.linspace(1.08e-11,1.15e-11,res)
+# liney = np.linspace(0,0,res)
+#
+# xs, ys = intersection(linex, liney, xt, np.real(td_short))
+# xl, yl = intersection(linex, liney, xt, np.real(td_long))
+# plt.plot(np.linspace(0,1.8e-11,res),np.linspace(0,0,res))
+# plt.plot(xt, np.real(td_short))
+# plt.plot(xt, np.real(td_long))
+# plt.plot(xs,ys,"*k")
+# plt.plot(xl,yl,"xk")
+# print("Duration short: " + str(xs[2]-xs[0]))
+# print("Duration long: " + str(xl[2]-xl[0]))
+# plt.show()
+#
