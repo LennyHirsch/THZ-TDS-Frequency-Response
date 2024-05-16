@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fft as fft
 from tomasino_fns_wip import *
-from intersect import intersection
 
 wvl_probe = 1030e-9 # probe wavelength: 1030 nm
 freq_thz = 3e12 # THz frequency: 3 THz
@@ -72,14 +71,6 @@ plt.xlim([startx,endx])
 # PLOTTING TIME-DOMAIN
 # plt.subplot(1,2,2)
 # plt.plot(xt, np.real(td))
-#
-# linex = np.linspace(1.1e-11,1.16e-11,res)
-# # linex = np.linspace(1.6e-12,2.4e-12,res)
-# liney = np.linspace(0,0,res)
-# #
-# # x, y = intersection(linex, liney, xt, np.real(td))
-# # plt.plot(x,y,"*k")
-# # print(f"Duration: {str(x[2]-x[0])}")
 #
 # plt.title("THz pulse (time domain)")
 # plt.xlabel("Time")
