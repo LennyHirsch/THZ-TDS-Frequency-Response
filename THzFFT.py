@@ -4,7 +4,7 @@ from scipy.fft import fft, ifft, rfft, rfftfreq, fftfreq
 from scipy.integrate import cumulative_trapezoid
 import numpy as np
 import pandas as pd
-import xarray as xr
+# import xarray as xr
 import csv
 
 def fft_thz(sig, pos, pad, step_size, start, end):
@@ -12,117 +12,142 @@ def fft_thz(sig, pos, pad, step_size, start, end):
     dt = step_size / c
     zeros = [0.0] * pad
 
-    diff = len(sig) - end # difference between full signal and single-cycle pulse
+    # diff = len(sig) - end - start # difference between full signal and single-cycle pulse
+    diff = len(sig) - (end - start) # difference between full signal and single-cycle pulse
     zero_diff = [0.0] * diff
 
-    sig = zeros + sig[start:end] + zeros + zero_diff # slice only the single cycle, then pad
-    # sig = zeros + sig + zeros
-    time = [s / c for s in pos]
-    time = [max(time) - t for t in time]
+    sig = zeros + sig[start:end] + zeros + zero_diff # slice only the single cycle, then time_pad
 
-    time_pad = []
-    for t in range(pad*2):
-        time_pad.append(max(time) + t*dt)
+    time = [i*dt for i in range(len(sig))]
 
-    time = time + time_pad
+    # pos.reverse()
+    #
+    # time = [p / c for p in pos]
+    # # time = [max(time) - t for t in time]
+    #
+    # time_pad = []
+    # for t in range(pad*2):
+    #     time_pad.append(max(time) + t*dt)
+    #
+    # time = time + time_pad
 
     duration = max(time)
     n = len(sig)
     sampleRate = n/duration
 
-    yf = rfft(sig)
-    xf = rfftfreq(n, 1/sampleRate)
+    fft = rfft(sig)
+    freq = rfftfreq(n, 1/sampleRate)
 
-    return (xf, yf, sig, time)
+    return (freq, fft, sig, time)
 
-def import_matlab_thz_struct(filepath):
-    trace = loadmat(filepath)['dataStruct']
-    sig = [item.flat[0] for item in trace[0][0]['x_mean'][0]] #in V
-    pos = [item.flat[0] / 1000 for item in trace[0][0]['pos'][0]] #in m
-    std = [item.flat[0] for item in trace[0][0]['x_std'][0]] #in V
-
-    return (sig, pos, std)
-
-path = './'
-# filename = 'datastruct_uncompressed - 23-11-14.mat'
-# filename = 'datastruct_uncompressed - prelim 1 - 23-11-14.mat'
-# filename = 'datastruct_uncompressed - 23-06-23-unpurged.mat'
-filename = 'datastruct_uncompressed - 1299 chop - 23-06-24.mat'
-# filename = 'datastruct_uncompressed - 22-07-11.mat'
-# filename = 'datastruct_compressed - 23-05-02.mat'
-
-(sig, pos, std) = import_matlab_thz_struct(path + filename)
-
-rows = zip(sig, pos, std)
-with open(filename.removesuffix('.mat') + '.csv', "w") as f:
-    writer = csv.writer(f)
-    for row in rows:
-        writer.writerow(row)
+def normalise(array):
+    maximum = max(np.abs(array))
+    return [a/maximum for a in array]
 
 
-sig = [s + 2.2e-4 for s in sig]
+path = './experimental-data/'
+# filename = 'datastruct_uncompressed - 23-11-14.csv'
+# filename = 'datastruct_uncompressed - prelim 1 - 23-11-14.csv'
+# filename = 'datastruct_uncompressed - 23-06-23-unpurged.csv'
+# filename = 'datastruct_uncompressed - 1299 chop - 23-06-24.csv'
+# filename = 'datastruct_uncompressed - 22-07-11.csv'
+filename = 'datastruct_compressed - 23-05-02.csv'
+
+sig = []
+pos = []
+std = []
+with open (path + filename, newline='') as file:
+    reader = csv.reader(file, delimiter=',', quotechar='|')
+    for row in reader:
+        if len(row):
+            sig.append(float(row[0]))
+            pos.append(float(row[1]))
+            std.append(float(row[2]))
+
+# pos.reverse()
 
 pad = 500
 step_size = 2e-6
 
-(freq, fft, sig_padded, time_padded) = fft_thz(sig, pos, pad, step_size, 20, 740)
+(freq, fft, sig, time) = fft_thz(sig, pos, pad, step_size, 20, 740)
 
+# # FROM MEETING WITH MATTEO
 
-t_0 = 6e-12
-integration_fact = 0.9e-12
-fun = [np.exp(-((t-t_0)**2 )/integration_fact**2 * np.pi) for t in time_padded]
+plt.plot(time, sig)
+plt.show()
+# sig = [s + 2.2e-4 for s in sig]
 
-factor = 0.885
-fun = [f*factor for f in fun]
+# 1299 chop
+t_0 = 5.685e-12 # 1299 chop
+width = 0.9e-12 
+factor = 0.919785
 
-# plt.plot(fun)
-# plt.show()
-sig_fun = [s*(1 + f) for s, f in zip(sig_padded, fun)]
+# compressed
+t_0 = 3.872e-12 # 1299 chop
+width = 8.81e-13 
+factor = 1.1
+gauss = [np.exp(-((t-t_0)**2 ) * np.pi / width**2) for t in time]
 
-integ = cumulative_trapezoid(sig_fun, time_padded[0:1730])
-print(integ[-1])
+gauss = [g*factor for g in gauss]
 
-# plt.plot(time_padded[0:1729], integ)
-# plt.plot(sig_fun)
-# plt.plot(integ)
-# plt.show()
+sig_gauss = [s*(1 + g) for s, g in zip(sig, gauss)]
+
+integ = cumulative_trapezoid(sig_gauss, time)
+print(f"last cum sum value: {integ[-1]}")
+print(f"gauss max: {time[gauss.index(max(gauss))]}")
+
+plt.plot(time[0:-1], integ)
+# plt.plot(time, gauss)
+plt.show()
+
+plt.plot(time, sig_gauss)
+plt.show()
 
 #WIP
 
-yf = rfft(sig_fun)
-duration = len(time_padded[0:1730])
-sampleRate = len(sig_fun)/duration
-xf = rfftfreq(len(sig_fun), 1/sampleRate)
+fft_edit = rfft(sig_gauss)
+duration = len(time)
+sampleRate = len(sig_gauss)/duration
+freq_edit = rfftfreq(len(sig_gauss), 1/sampleRate)
 
-plt.plot(xf, np.abs(yf))
+# NORMALISE
+fft = normalise(fft)
+fft_edit = normalise(fft_edit)
+sig = normalise(sig)
+gauss = normalise(gauss)
+
+# plt.plot(time, sig)
+# plt.plot(time, gauss)
+# plt.show()
+#
+plt.plot(freq, np.abs(fft))
+plt.plot(freq, np.abs(fft_edit))
 plt.yscale('log')
+plt.xlim([-1e12,1e13])
 plt.show()
 
-#NORMALISE
-maximum = max(fft)
-fft_norm = [f/maximum for f in fft]
-
-# PLOTTING
-plt.figure(1)
-plt.grid(which='major', color='#DDDDDD', linewidth=0.8)
-plt.grid(which='minor', color='#EEEEEE', linewidth=0.4)
-plt.minorticks_on()
-plt.plot(range(len(pos)), sig, 'gx')
-plt.xlabel('Position (mm)')
-plt.ylabel('Amplitude (V)')
-plt.title(filename + '  Time domain')
-
-plt.figure(2)
+#
+# # PLOTTING
+# plt.figure(1)
 # plt.grid(which='major', color='#DDDDDD', linewidth=0.8)
 # plt.grid(which='minor', color='#EEEEEE', linewidth=0.4)
-plt.minorticks_on()
-plt.plot(freq, np.abs([f**2 for f in fft_norm]))
-plt.ylim([1e-4, 2])
-plt.xlim([0,1e13])
-plt.xlabel('Frequency (Hz)')
-plt.yscale('log')
-
-plt.ylabel('Amplitude^2 (a.u.)')
-plt.title(filename + ' FFT')
-
-# plt.show()
+# plt.minorticks_on()
+# plt.plot(range(len(pos)), sig, 'gx')
+# plt.xlabel('Position (mm)')
+# plt.ylabel('Amplitude (V)')
+# plt.title(filename + '  Time domain')
+#
+# plt.figure(2)
+# # plt.grid(which='major', color='#DDDDDD', linewidth=0.8)
+# # plt.grid(which='minor', color='#EEEEEE', linewidth=0.4)
+# plt.minorticks_on()
+# plt.plot(freq, np.abs([f**2 for f in fft_norm]))
+# plt.ylim([1e-4, 2])
+# plt.xlim([0,1e13])
+# plt.xlabel('Frequency (Hz)')
+# plt.yscale('log')
+#
+# plt.ylabel('Amplitude^2 (a.u.)')
+# plt.title(filename + ' FFT')
+#
+# # plt.show()
