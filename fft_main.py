@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import cumulative_trapezoid as cum_trap
+from scipy.optimize import minimize
 from matplotlib import pyplot as plt
 from fft_lib import *
 
@@ -26,6 +27,7 @@ pad = 500
 step_size = pos[1]-pos[0]
 start = 20
 end = 740
+print(len(sig))
 
 padded_sig = np.array(pad_sig(normalised_sig, pad, start, end))
 padded_time = np.array(pad_time(zeroed_time, pad, start, end, step_size))
@@ -37,16 +39,43 @@ padded_time = np.array(pad_time(zeroed_time, pad, start, end, step_size))
 # plotter(padded_time, padded_sig, title='Padded data', xlabel='Time (s)')
 
 # APPLY GAUSSIAN
-t0 = 0
-tau = 0.1856e-12
-gauss = normalise(gaussian(padded_time, t0, width(tau)))
+# # UNCOMPRESSED 23-06-23 unpurged start = 0 end = 316
+# t0 = 0e-12
+# tau = 0.5e-12
+# factor = 5
+# COMPRESSED
+# t0 = 0.378e-12
+# tau = 0.3105e-12
+# factor = 10
+# UNCOMPRESSED 1299 CHOP start = 20 end = 740
+t0 = 0.36e-12
+tau = 0.355e-12
+factor = 7.7
 
-factor = 0.88
+gauss = normalise(gaussian(padded_time, t0, width(tau)))
 gauss = gauss*factor
 
 sig_gauss = padded_sig*(1 + gauss)
 
 cum_sum = normalise(cum_trap(sig_gauss, padded_time))
+
+# def optimal_cum(params): # this should be as small as possible
+#     t0, tau, factor = params
+#     gauss = gaussian(padded_time, t0, width(tau))*factor
+#     sig_gauss = padded_sig*(1 + gauss)
+#     cum_sum = cum_trap(sig_gauss, padded_time)
+#     return cum_sum[-1]
+#
+# initial_guess = [t0, tau, factor]
+# result = minimize(optimal_cum, initial_guess, tol=1e-20, options={'maxiter': 1000})
+#
+# if result.success:
+#     print(result.x)
+#     print(result.fun)
+# else:
+#     raise ValueError(result.message)
+#
+# optimal = optimal_cum(initial_guess)
 print(f"Cumulative sum: {cum_sum[-1]}")
 
 # PLOT COMPARISON OF SIGNALS (TIME-DOMAIN)
