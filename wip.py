@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fft as fft
-from tomasino_fns_wip import *
+from tomasino_fns_wip import wvl, omega, eps_thz, transfer_function, normalise
 
 wvl_probe = 1030e-9  # probe wavelength: 1030 nm
 freq_thz = 3e12  # THz frequency: 3 THz
@@ -11,10 +11,11 @@ res = int(1e4)
 z = np.linspace(0, 1e-3, res, dtype=np.float128)
 freq = np.linspace(0.1e11, 1e13, res, dtype=np.float128)
 
-t_pump = 200e-15
-t_pp = t_pump / 2 * np.sqrt(np.log(2))
+t_pump = 245e-15
+t_pp = t_pump / (2 * np.sqrt(np.log(2)))
 print(f"t_pp: {t_pp}")
-t_probe = 1e-15
+t_probe = 55e-15
+t_probe = t_probe / (2 * np.sqrt(np.log(2)))
 print(f"t_probe: {t_probe}")
 
 # CALCULATING N_THZ: THIS IS DONE FROM A FITTING EQUATION OF EXPERIMENTAL DATA
@@ -62,6 +63,7 @@ plt.yscale("log")
 plt.title("Detected E-field (Frequency domain)")
 plt.xlabel("Freq")
 plt.ylabel("E field ^2")
+plt.xticks(np.arange(0, 1e13, 1e12))
 starty = 0.8e-4
 endy = 2
 plt.ylim([starty, endy])
@@ -94,5 +96,5 @@ filename = (
 )
 fullname = f"{dir}{filename}.svg"
 print(fullname)
-plt.savefig(fullname)
+# plt.savefig(fullname)
 plt.show()
