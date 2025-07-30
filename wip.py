@@ -8,14 +8,14 @@ freq_thz = 3e12  # THz frequency: 3 THz
 
 # SETTING SIMULATION PARAMETERS
 res = int(1e4)
-z = np.linspace(0, 1e-3, res, dtype=np.float128)
+z = np.linspace(0, 1e-6, res, dtype=np.float128)
 freq = np.linspace(0.1e11, 1e13, res, dtype=np.float128)
 
 t_pump = 245e-15
 t_pp = t_pump / (2 * np.sqrt(np.log(2)))
 print(f"t_pp: {t_pp}")
-t_probe = 55e-15
-t_probe = t_probe / (2 * np.sqrt(np.log(2)))
+t_probe_FWHM = 1e-15
+t_probe = t_probe_FWHM / (2 * np.sqrt(np.log(2)))
 print(f"t_probe: {t_probe}")
 
 # CALCULATING N_THZ: THIS IS DONE FROM A FITTING EQUATION OF EXPERIMENTAL DATA
@@ -91,10 +91,10 @@ filename = (
     "pump-"
     + str(int(t_pump * 10**15))
     + "fs_probe-"
-    + str(int(t_probe * 10**15))
+    + str(int(t_probe_FWHM * 10**15))
     + "fs"
 )
 fullname = f"{dir}{filename}.svg"
 print(fullname)
-# plt.savefig(fullname)
+plt.savefig(fullname)
 plt.show()

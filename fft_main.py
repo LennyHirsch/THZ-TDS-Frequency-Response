@@ -1,5 +1,7 @@
 import numpy as np
+import csv
 from scipy.integrate import cumulative_trapezoid as cum_trap
+from matplotlib import pyplot as plt
 from fft_lib import (
     import_thz,
     pos2time,
@@ -14,95 +16,70 @@ from fft_lib import (
 )
 
 # IMPORT RAW DATA
+# path = "./traces/cooled/"
 path = "./traces/"
 filenames = [
-    "datastruct_uncompressed - 23-11-14.csv",  # 0
-    "datastruct_uncompressed - prelim 1 - 23-11-14.csv",  # 1
-    "datastruct_uncompressed - 23-06-23-unpurged.csv",  # 2
-    "datastruct_uncompressed - 1299 chop - 23-06-24.csv",  # 3
-    "datastruct_uncompressed - 22-07-11.csv",  # 4
-    "datastruct_uncompressed - 22-07-11.csv",  # 5
-    "datastruct_compressed - 23-05-02.csv",  # 6
-    "28W-pump-400uW-probe-2khz-chop-5-hum-100k-rep-cooled.csv",  # 7
-    "28W-pump-400uW-probe-2khz-chop-5-hum-100k-rep-uncooled.csv",  # 8
-    "22-07-13-high_res_scan.csv",  # 9
-    "23-06-23-trace-6k-sampling-100ms-tc-15W-pump-400uW-probe-2kHz chop.csv",  # 10
-    "23-06-24-uncompressed-allegedly.csv",  # 11
-    "23-11-24-uncooled-400uW-3s-sampling-1mm-trace-apparently-uncomp.csv",  # 12
-    "24-02-03-16_8W-100uW-100ms_polling-6k_sampling-compressed_probe.csv",  # 13
+    "datastruct_compressed - 23-05-02.csv",
+    "config4.csv",
+    # "28W-400uW-cooled.csv",
+    # "28W-400uW-uncooled.csv",
+    # "22W-400uW-cooled.csv",
+    # "22W-400uW-uncooled.csv",
 ]
 
 
-fullpath = path + filenames[10]
+def mod_fft(filepath, pad, start, end, t0, tau, factor):
+    (sig, pos, std) = import_thz(filepath)
+    time = pos2time(pos)
 
-(sig, pos, std) = import_thz(fullpath)
-time = pos2time(pos)
+    normalised_sig = normalise(sig)
+    zeroed_time = normalise_time(time, sig)
 
-normalised_sig = normalise(sig)
-zeroed_time = normalise_time(time, sig)
+    step_size = pos[1] - pos[0]
 
-pad = 500
-step_size = pos[1] - pos[0]
+    padded_sig = np.array(pad_sig(normalised_sig, pad, start, end))
+    padded_time = np.array(pad_time(zeroed_time, pad, start, end, step_size))
 
-# SET PARAMETERS FOR GAUSSIAN
-# start = 0
-# end = -1
-# t0 = -0e-12
-# tau = 0.6e-12
-# factor = 3.7
-start = 0
-end = 297
-t0 = 0e-12
-tau = 0.2e-12
-factor = 1
+    gauss = normalise(gaussian(padded_time, t0, width(tau)))
+    gauss = gauss * factor
 
-# plotter(range(0, len(sig)), normalised_sig)
+    sig_gauss = padded_sig * (1 + gauss)
 
-# PAD TIME AND SIGNAL
-padded_sig = np.array(pad_sig(normalised_sig, pad, start, end))
-padded_time = np.array(pad_time(zeroed_time, pad, start, end, step_size))
+    cum_sum = cum_trap(sig_gauss, padded_time)
+    print(f"Cumulative sum: {cum_sum[-1]}")
 
-# DEBUG PLOTS
-# plotter(zeroed_time, orig_sig, title='Zeroed time', xlabel='Time (s)')
-# plotter(padded_time, padded_sig, title='Padded data', xlabel='Time (s)')
+    (fft, freq) = fft_thz(padded_time, sig_gauss)
+    fft = normalise(np.abs(fft) ** 2)
+    plt.plot(freq * 10**-12, fft)
 
-# APPLY GAUSSIAN
+    return (freq * 10**-12, fft)
 
-gauss = normalise(gaussian(padded_time, t0, width(tau)))
-gauss = gauss * factor
 
-sig_gauss = padded_sig * (1 + gauss)
+# -----------------------i---pad--s---e------t0-------tau-----f----
+# compressed = mod_fft(path + filenames[0], 500, 20, 740, 0.398e-12, 0.365e-12, 10)
 
-cum_sum = cum_trap(sig_gauss, padded_time)
+compressed = mod_fft(path + filenames[0], 500, 0, -1, 0.398e-12, 0.365e-12, 0)
+# COOLED
+# uncompressed = mod_fft(path + filenames[1], 500, 0, -1, -0.02e-12, 0.5e-12, 5)  # COOLED
 
-print(f"Cumulative sum: {cum_sum[-1]}")
-print(".")  # just here to keep result in terminal after execution
+# mod_fft(path + filenames[1], 500, 0, -1, -0.48e-12, 0.45e-12, 5)  # UNCOOLED
+plt.yscale("log")
 
-# PLOT COMPARISON OF SIGNALS (TIME-DOMAIN)
-plotter(
-    padded_time[0:-1],
-    cum_sum,
-    title="Comparing padded sig, sig_gauss, and cum sum",
-    legend=["Padded sig", "Sig gauss", "Cum sum"],
-)
+xlim = [0, 10]  # in THz
+ylim = [5e-4, 2]
+plt.title("Comparing compressed and uncompressed experimental spectra")
+plt.xlabel("Frequency (THz)")
+plt.ylabel("Power spectrum (a.u.)")
+plt.legend(["Cooled", "Uncooled"])
+plt.xticks(np.arange(0, 10, 1))
+# plt.xlim(xlim)
+# plt.axhline(0.5, linestyle=":", color="k")
+# plt.ylim(ylim)
+plt.show()
 
-# FFT
-(orig_fft, freq) = fft_thz(padded_time, padded_sig)
-(fft, freq) = fft_thz(padded_time, sig_gauss)
-orig_fft = normalise(np.abs(orig_fft) ** 2)
-fft = normalise(np.abs(fft) ** 2)
-
-xlim = [-1, 10]  # in THz
-ylim = [5e-6, 2]
-
-plotter(
-    freq * 10**-12,
-    orig_fft,
-    fft,
-    title="Comparing FFTs",
-    xlabel="Frequency (THz)",
-    legend=["Original", "Modified"],
-    xlim=xlim,
-    ylim=ylim,
-    log=True,
-)
+with open("experimental_data_fig9.csv", "w", newline="") as file:
+    writer = csv.writer(file, delimiter=" ", quotechar="|", quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(compressed[0])
+    writer.writerow(compressed[1])
+    writer.writerow(uncompressed[0])
+    writer.writerow(uncompressed[1])

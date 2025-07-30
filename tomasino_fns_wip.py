@@ -14,7 +14,7 @@ thz_waist = 3.5e-3
 # In Tomasino et al. they say X2 is the second-order susceptibility for the DFG case (the same as the OR case). Is this the r_41? Or d_41? I... don't know.
 
 # E-field constants
-E0 = 1e9  # normalise electric field for now
+E0 = 1e12  # normalise electric field for now
 # n_g = 3.4216 # NOTE: from refractiveindex.info (Parsons and Coleman)
 n_g = 3.3212
 
